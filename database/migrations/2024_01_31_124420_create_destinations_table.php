@@ -13,12 +13,10 @@ return new class extends Migration
     {
         Schema::create('destinations', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('banner_media')->nullable();
-            $table->string('banner_title')->nullable();
-            $table->string('banner_gallery')->nullable();
-            $table->text('about_activity')->nullable();
-            $table->text('highlight')->nullable();
+            $table->string('name');
+            $table->string('slug');
+            $table->string('banner_media');
+            $table->string('subtitle');
             $table->timestamps();
         });
     }

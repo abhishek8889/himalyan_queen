@@ -17,9 +17,11 @@ class CustomerQueryMail extends Mailable
      * Create a new message instance.
      */
     public $data;
-    public function __construct($data)
+    public $envelopeSub;
+    public function __construct($data,$envelopeSub)
     {
         $this->data = $data;
+        $this->envelopeSub = $envelopeSub;
     }
 
     /**
@@ -28,7 +30,7 @@ class CustomerQueryMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Customer Query Mail',
+            subject: $this->envelopeSub,
         );
     }
 

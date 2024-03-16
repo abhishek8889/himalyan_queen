@@ -10,13 +10,21 @@
 <body>
     <section>
         <div class="container">
-            <h3>New customer query</h3>
+            @if($mailData['type'] == 'query')
+                <h3>Customer Query</h3>
+            @endif
+            @if($mailData['type'] == 'booking')
+                <h3>Customer Booking</h3>
+            @endif
             <h5>{{ $mailData['subject'] ?? '' }}</h5>
             <div>
                 {{$mailData['description'] ?? ''}}
             </div>
             <div>
                 <strong>customer name :</strong> {{$mailData['name'] ?? ''}}
+            </div>
+            <div>
+                <strong>customer contact :</strong> {{$mailData['contact'] ?? ''}}
             </div>
             <div>
                 <strong>customer email :</strong> {{ $mailData['email'] ?? '' }}

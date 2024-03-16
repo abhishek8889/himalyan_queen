@@ -2,37 +2,52 @@
 @section('content')
 <section class="section">
     <div class="row align-items-top">
-        @foreach($destinations as $destination)
-        <?php 
-            // $banner_media = $destination
-            if(isset($destination->banner_media)){
-                $banner_media_id = json_decode($destination->banner_media);
-                $banner_media = App\Models\Media::find($banner_media_id);
-                $banner_media_url = asset('storage/PackageBanner/'.$banner_media->image_name);
-                $image_name = $banner_media->image_name;
-            }
-        
-        ?>
-        <div class="col-lg-4">
-            <div class="card">
-                <img src="{{ $banner_media_url }}" class="card-img-top" alt="{{ $image_name }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ $destination->name ?? '' }}</h5>
-                    <p class="card-text">{{ $destination->banner_title ?? '' }}</p>
-                    <?php
-                    if(isset($destination->about_activity)){
-                        echo $destination->about_activity;
-                    }
-                    ?>
-                    <?php 
-                    if(isset($destination->highlight)){
-                        echo $destination->highlight;
-                    }
-                    ?>
-                </div>
-            </div>
+        <div class="card"> 
+        <h5 class="pt-3">Destinations</h5>
+        <table class="table pt-3">
+            <thead>
+                <tr>
+                    <th scope="col">Sr. no.</th>
+                    <th scope="col"></th>
+                    <th scope="col">Destination</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php 
+                $count = 0;
+            ?>
+            @forelse($destinations as $destination)
+                <?php 
+                    $count = $count + 1;
+                ?>
+                <tr>
+                    <th scope="row">{{ $count }}</th>
+                    <td>
+                       <div>
+                           <img src="{{ asset('storage/PackageBanner/'.$destination->bannerMedia->image_name) }}" alt="{{ $destination->bannerMedia->image_name ?? '' }}" width="80px" height="80px">
+                       </div>
+                    </td>
+                    <td>{{ $destination->name ?? '' }}</td>
+                    <td>
+                        <a href="{{ route('destination.edit',['id' => $destination->id ]) }}" class="btn btn-success btn-sm"><i class="bi bi-pencil-square"></i></a>
+                        <a href="{{ route('destination.delete',['id' => $destination->id]) }}" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></a>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <th></th>
+                    <td class="text text-danger">No Destinations in list.</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            @endforelse
+            </tbody> 
+        </table>
         </div>
-        @endforeach
+        <div class="d-flex">
+        {!! $destinations->links() !!}
+        </div>
     </div>
 </section>
 <script>
