@@ -7,7 +7,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free HTML Templates" name="keywords">
     <meta content="Free HTML Templates" name="description">
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Favicon -->
     <link href="{{ asset('themecss/img/himalyan-queen-favicon-color.png') }}" rel="icon">
 
@@ -31,9 +31,31 @@
     <!-- End -->
     <!-- Customized Bootstrap Stylesheet -->
     <link href="{{ asset('themecss/css/style.css') }}" rel="stylesheet">
+    <style>
+        .whatsapp-button {
+            position: fixed;
+            bottom: 115px; /* Adjust this value to control the distance from the bottom */
+            right: 20px; /* Adjust this value to control the distance from the right */
+            z-index: 1000; /* Ensure it appears above other elements on the page */
+        }
+
+        /* Optional: Add some styles to your WhatsApp button */
+        .whatsapp-button img {
+            width: 50px; /* Adjust the width of your WhatsApp icon */
+            height: 50px; /* Adjust the height of your WhatsApp icon */
+            border-radius: 50%; /* For a circular button, if your icon is square */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Optional: Add a subtle box shadow */
+        }
+    </style>
 </head>
 
 <body>
+    <!-- <div id="loading_spinner" style="display:none;">
+        <img src="{{ asset('themecss/img/spinner.gif') }}" alt="spinner.gif">
+    </div> -->
+    <div id="loading_spinner" class="overlay in" style="display:none;">
+        <span class="loader"></span>
+    </div>
     <!-- Topbar Start -->
     <div class="container-fluid bg-light pt-3 d-none d-lg-block">
         <div class="container">
@@ -42,29 +64,23 @@
                     <div class="d-inline-flex align-items-center">
                         <p>
                             <i class="fa fa-envelope mr-2"></i>
-                            <a href = "mailto:himalyanqueen5454@gmail.com">
-                            himalyanqueen5454@gmail.com
+                            <a href = "mailto:{{ $site_info['site_email'] ?? '' }}">
+                            {{ $site_info['site_email'] ?? '' }}
                             </a>
                         </p>
                         <p class="text-body px-3">|</p>
-                        <p><i class="fa fa-phone-alt mr-2"></i>+91 70180 61471</p>
+                        <p><i class="fa fa-phone-alt mr-2"></i>{{ $site_info['contact'] ?? '' }}</p>
                     </div>
                 </div>
                 <div class="col-lg-6 text-center text-lg-right">
                     <div class="d-inline-flex align-items-center">
-                        <a class="text-primary px-3" href="">
+                        <a class="text-primary px-3" href="//{{ $site_info['facebook_link'] ?? '' }}">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a class="text-primary px-3" href="">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a class="text-primary px-3" href="">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a class="text-primary px-3" href="">
+                        <a class="text-primary px-3" href="//{{ $site_info['instagram_link'] ?? '' }}">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a class="text-primary pl-3" href="">
+                        <a class="text-primary pl-3" href="//{{ $site_info['youtube_link'] ?? '' }}">
                             <i class="fab fa-youtube"></i>
                         </a>
                     </div>
@@ -81,7 +97,8 @@
             <nav class="navbar navbar-expand-lg bg-light navbar-light shadow-lg py-3 py-lg-0 pl-3 pl-lg-5">
                 <a href="{{ url('/') }}" class="navbar-brand desktop-logo">
                     <!-- <h1 class="m-0 text-primary"><span class="text-dark">HILL </span>QUEEN</h1> -->
-                    <img src="{{ asset('themecss/img/logo-no-background.png ') }}" />
+                    <img src="{{ asset($site_info['header_logo']) }}" alt="header_logo"/>
+                   
                 </a>
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                     <span class="navbar-toggler-icon"></span>
@@ -151,6 +168,22 @@
     <!-- Carousel End -->
     @else
     <!-- Header Start for other pages -->
+    @if(Request::segment(1) == 'package' && Request::segment(2) == 'detail')
+    <div class="container-fluid page-header">
+        <div class="container">
+            <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 400px">
+                <h3 class="display-4 text-white text-uppercase">{{ Request::segment(1) }}</h3>
+                <div class="d-inline-flex text-white">
+                    <p class="m-0 text-uppercase"><a class="text-white" href="">Home</a></p>
+                    <i class="fa fa-angle-double-right pt-1 px-3"></i>
+                    <p class="m-0 text-uppercase"><a class="text-white" href="{{ url('packages') }}">{{ Request::segment(1) }}</a></p>
+                    <i class="fa fa-angle-double-right pt-1 px-3"></i>
+                    <p class="m-0 text-uppercase">{{ Request::segment(3) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    @else
     <div class="container-fluid page-header">
         <div class="container">
             <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 400px">
@@ -163,6 +196,7 @@
             </div>
         </div>
     </div>
+    @endif
     <!-- Header End -->
     @endif
     
@@ -219,7 +253,7 @@
                         <button class="btn btn-primary btn-block" type="submit"
                             style="height: 47px; margin-top: -2px;">Submit</button>
                     </div>
-                </div>
+                </div>+
             </div>
         </div>
     </div> -->
@@ -227,14 +261,22 @@
 
     @yield('content')
 
-
+   <!-- Whatsaap button start -->
+   <div class="whatsapp-button">
+        <!-- Add your WhatsApp icon or button markup here -->
+        <a href="https://wa.me/{{ $site_info['whatsapp_number'] ?? '' }}" target="_blank" rel="noopener noreferrer">
+        <img src="{{ asset('themecss/img/icons8-whatsapp.svg')  }} " alt="WhatsApp">
+        </a>
+    </div>
+   <!-- End -->
+   
     <!-- Footer Start -->
     <div class="container-fluid bg-dark text-white-50 py-5 px-sm-3 px-lg-5" style="margin-top: 90px;">
         <div class="row pt-5">
-            <div class="col-lg-3 col-md-6 mb-5">
+            <div class="col-lg-4 col-md-6 mb-5">
                 <a href="{{ url('/') }}" class="navbar-brand footer-logo">
                     <!-- <h1 class="text-primary"><span class="text-white">TRAVEL</span>ER</h1> -->
-                    <img src="{{ asset('themecss/img/logo-no-background-footer.png') }}" />
+                    <img src="{{ asset($site_info['footer_logo']) }}" />
                 </a>
                 <p>Sed ipsum clita tempor ipsum ipsum amet sit ipsum lorem amet labore rebum lorem ipsum dolor. No sed
                     vero lorem dolor dolor</p>
@@ -246,7 +288,7 @@
                     <a class="btn btn-outline-primary btn-square" href="#"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6 mb-5">
+            <!-- <div class="col-lg-3 col-md-6 mb-5">
                 <h5 class="text-white text-uppercase mb-4" style="letter-spacing: 5px;">Our Services</h5>
                 <div class="d-flex flex-column justify-content-start">
                     <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>About</a>
@@ -257,8 +299,8 @@
                     <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>Testimonial</a>
                     <a class="text-white-50" href="#"><i class="fa fa-angle-right mr-2"></i>Blog</a>
                 </div>
-            </div>
-            <div class="col-lg-3 col-md-6 mb-5">
+            </div> -->
+            <div class="col-lg-4 col-md-6 mb-5">
                 <h5 class="text-white text-uppercase mb-4" style="letter-spacing: 5px;">Usefull Links</h5>
                 <div class="d-flex flex-column justify-content-start">
                     <a class="text-white-50 mb-2" href="#"><i class="fa fa-angle-right mr-2"></i>About</a>
@@ -270,11 +312,11 @@
                     <a class="text-white-50" href="#"><i class="fa fa-angle-right mr-2"></i>Blog</a>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6 mb-5">
+            <div class="col-lg-4 col-md-6 mb-5">
                 <h5 class="text-white text-uppercase mb-4" style="letter-spacing: 5px;">Contact Us</h5>
                 <p><i class="fa fa-map-marker-alt mr-2"></i>123 Street, New York, USA</p>
-                <p><i class="fa fa-phone-alt mr-2"></i>+91 70180 614710</p>
-                <p><i class="fa fa-envelope mr-2"></i>himalyanqueen5454@gmail.com</p>
+                <p><i class="fa fa-phone-alt mr-2"></i>{{ $site_info['contact'] ?? '' }}</p>
+                <p><i class="fa fa-envelope mr-2"></i>{{ $site_info['site_email'] ?? '' }}</p>
                 <h6 class="text-white text-uppercase mt-4 mb-3" style="letter-spacing: 5px;">Newsletter</h6>
                 <div class="w-100">
                     <div class="input-group">
@@ -292,7 +334,7 @@
         style="border-color: rgba(256, 256, 256, .1) !important;">
         <div class="row">
             <div class="col-lg-12 text-center text-md-left mb-3 mb-md-0">
-                <p class="m-0 text-white-50 text-center">Copyright &copy; <a href="#">Domain</a>. All Rights
+                <p class="m-0 text-white-50 text-center">Copyright &copy; <a href="#">Himalyan Queen</a>. All Rights
                     Reserved.</a>
                 </p>
             </div>
@@ -321,9 +363,11 @@
     <!-- Contact Javascript File -->
     <script src="{{ asset('themecss/mail/jqBootstrapValidation.min.js') }}"></script>
     <script src="{{ asset('themecss/mail/contact.js') }}"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Template Javascript -->
     <script src="{{ asset('themecss/js/main.js') }}"></script>
+    <script src="{{ asset('themecss/js/function.js?'.time()) }}"></script>
+    
 </body>
 
 </html>

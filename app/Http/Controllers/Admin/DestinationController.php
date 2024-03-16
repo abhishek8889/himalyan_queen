@@ -3,28 +3,35 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\Destination;
 use App\Models\Media;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use App\Events\DeleteMedia;
+
 
 
 class DestinationController extends Controller
 {
     public function index(Request $request){
-        $destinations = Destination::all();
-        // $galleryMediaFromIds = Media::whereIn('id', json_decode($destination->banner_gallery))->get();
-       
+        $destinations = Destination::paginate(4);
         return view('admin.destination.index',compact('destinations'));
     }
     public function addDestination(Request $request){
-        
         return view('admin.destination.add');
     }
     public function addDestinationProcess(Request $request){
-        // dd($request);
-        $destination = new Destination;
-        $mediaDetails = array();
+      
+        $validatedData = $request->validate([
+            'name' => 'required',
+            'sub_title' => 'required',
+        ]);
+
+        if(isset($request->destination_id)){
+            $destination = Destination::find($request->destination_id);
+        }else{
+            $destination = new Destination;
+        }
+
         if($request->has('banner_media')){
             $banner_media = $request->file('banner_media');
             $imageName = time() . '.' . $banner_media->extension();
@@ -40,31 +47,52 @@ class DestinationController extends Controller
             $banner_media->save();
             $banner_media_id = $banner_media->id;
         }
-        if($request->has('gallery')){
-            foreach($request->file('gallery') as $image){
-                $imageName = time() . '_' . $image->getClientOriginalName();
-                $image->storeAs('public/PackageBanner', $imageName);
-                $imageUrl = asset('storage/PackageBanner/'.$imageName);
-                $directoryPath = asset('storage/PackageBanner');
 
-                $gallery_media = new Media;
-                $gallery_media->image_name = $imageName;
-                $gallery_media->image_url = $imageUrl;
-                $gallery_media->directory_path = $directoryPath;
-                $gallery_media->save();
-
-                $gallery_media_list[] = $gallery_media->id;
-            }
-        }
+        $name = $request->name;
+        $destination_slug = strtolower(str_replace(' ', '-', $name));
 
         $destination->name = $request->name;
-        $destination->banner_media = json_encode($banner_media_id);
-        $destination->banner_title = $request->banner_title;
-        $destination->banner_gallery = json_encode($gallery_media_list);
-        $destination->about_activity = $request->about_activity;
-        $destination->highlight = $request->highlight;
+        $destination->slug = $destination_slug;
+        if(isset($banner_media_id) && !empty($banner_media_id)){
+            if(isset($request->destination_id)){
+                $dlt_banner_media_id = array($destination->banner_media);
+               
+                event(new DeleteMedia($dlt_banner_media_id));
+            }
+            $destination->banner_media = $banner_media_id;
+        }
+        $destination->subtitle = $request->sub_title;
+        
         $destination->save();
 
-        return redirect()->back()->with('success','Your destination is saved succesfully !');
+        if(isset($request->destination_id)){
+            return redirect()->back()->with('success','Your Destination is succesfully updated.');
+        }else{
+            return redirect()->back()->with('success','Your Destination is succesfully added.');
+        }
+    }
+    public function editDestination(Request $req){
+        $destination = Destination::find($req->id);
+        return view('admin.destination.edit',compact('destination'));
+    }
+    // public function editDestinationProc(Request $req){
+    //     $destinationID = $req->destination_id;
+    //     $destination = Destination::find($destinationID);
+
+    //     $name = $req->name;
+    //     $destination_slug = strtolower(str_replace(' ', '-', $name));
+
+    //     $destination->name = $req->name;
+    //     $destination->slug = $destination_slug;
+    //     // $destination->banner_media = $banner_media_id;
+    //     $destination->subtitle = $req->sub_title;
+    //     $destination->update();
+
+    //     return redirect()->back()->with('success','Your Destination is succesfully updated.');
+    // }
+    public function deleteDestination(Request $req){
+        $destination = Destination::find($req->id);
+        $destination->delete();
+        return redirect()->route('destination.list')->with('success','You have successfully delete the destination.');
     }
 }
